@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "IjZr7a1+Ao0=",
+  "success": true,
+  "projectFilePath": "/Users/sasankaweerakoon/GitHub/Cloud_Computing_Group_2/backend/identity-service/identity-service.csproj",
+  "expectedPackageFiles": [
+    "/Users/sasankaweerakoon/.nuget/packages/microsoft.aspnetcore.openapi/9.0.6/microsoft.aspnetcore.openapi.9.0.6.nupkg.sha512",
+    "/Users/sasankaweerakoon/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
