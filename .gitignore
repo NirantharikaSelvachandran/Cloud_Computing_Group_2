@@ -1,1 +1,24 @@
 .DS_Store
+node_modules
+dist
+build
+coverage
+.env
+*.log
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Ignore all files in the public directory except for index.html
+/public/*
+!/public/index.html
+
+**/obj/
+**/bin/
+**/Debug/
+**/Release/
+**/x64/
+**/x86/
