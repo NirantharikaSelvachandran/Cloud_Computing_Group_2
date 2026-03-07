@@ -8,6 +8,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<VoteDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
 
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<VoteService>();
 
 var app = builder.Build();
