@@ -1,24 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Salary Transparent – Frontend
 
-## Getting Started
+Frontend for the community-driven tech salary transparency platform. Built with **Next.js 16**, **React 19**, and **Tailwind CSS 4**. All API requests go through the **BFF (Backend-for-Frontend)**; the frontend never talks directly to backend microservices.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Home** – Hero and recent salary submissions (from search API).
+- **Search** – Filter salaries by country, company, role, and level (no login).
+- **Submit** – Anonymous salary submission (no login).
+- **Statistics** – Aggregated stats by country/role (no login).
+- **Login / Register** – Required only for **voting** and reporting. Identity is stored separately from salary data.
+- **Voting** – Logged-in users can upvote/downvote submissions on salary cards (trustworthy?).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Getting started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Install and run**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+2. **Configure BFF URL** (required for API calls)
+
+   Copy `.env.local.example` to `.env.local` and set the BFF base URL, e.g.:
+
+   ```env
+   NEXT_PUBLIC_BFF_URL=http://localhost:5000
+   ```
+
+   With this, the app calls `http://localhost:5000/api/*` for auth, salaries, votes, search, and stats.
+
+3. Open [http://localhost:3000](http://localhost:3000).
+
+## BFF API usage
+
+The frontend expects the BFF to expose:
+
+| Path | Methods | Purpose |
+|------|---------|--------|
+| `/api/auth/register` | POST | Register (email, password) |
+| `/api/auth/login` | POST | Login (email, password) |
+| `/api/salaries/submit` | POST | Anonymous salary submission |
+| `/api/salaries/{id}` | GET | Get one salary (if needed) |
+| `/api/search` | GET | Search with query params (country, company, role, level, …) |
+| `/api/stats` | GET | Stats with query params (country, role, …) |
+| `/api/votes/{salaryId}` | GET | Vote counts for a salary |
+| `/api/votes` | POST | Submit vote (salaryId, userId, voteType: UP/DOWN); requires auth |
+
+## Project structure
+
+- `app/` – Routes: `page.tsx` (home), `search/`, `submit/`, `stats/`, `login/`, `register/`, `layout.tsx`, `providers.tsx`, `globals.css`
+- `components/` – `Header.tsx`, `SalaryCard.tsx` (with voting for logged-in users)
+- `context/` – `AuthContext.tsx` (login state, token, userId)
+- `lib/` – `api.ts` (BFF client), `types.ts` (shared types)
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) (Geist) and Tailwind for styling.
 
 ## Learn More
 
