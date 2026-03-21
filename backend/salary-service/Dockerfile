@@ -12,4 +12,4 @@ COPY --from=build /app/publish .
 
 EXPOSE 8080
 
-ENTRYPOINT ["dotnet", "SalaryService.dll"]
+ENTRYPOINT ["dotnet", "salary-service.dll"]
