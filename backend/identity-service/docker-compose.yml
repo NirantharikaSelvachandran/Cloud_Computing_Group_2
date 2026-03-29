@@ -1,0 +1,45 @@
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: techsalary-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: techsalary
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"           # exposed so you can connect with DBeaver / psql locally
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d techsalary"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Identity Service ────────────────────────────────────────────────────────
+  identity-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: identity-service
+    restart: unless-stopped
+    ports:
+      - "8080:8080"           # Swagger UI → http://localhost:8080/swagger
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=techsalary;Username=postgres;Password=postgres"
+      Jwt__Secret: "dev-secret-key-minimum-32-characters-long!!"
+      Jwt__Issuer: "identity-service"
+      Jwt__Audience: "techsalary-platform"
+      Jwt__AccessTokenMinutes: "60"
+      Jwt__RefreshTokenDays: "30"
+    depends_on:
+      postgres:
+        condition: service_healthy   # waits until postgres is ready
+
+volumes:
+  postgres_data:

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: identity-service-config
+  namespace: app
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_URLS: "http://+:8080"
+  Jwt__Issuer: "identity-service"
+  Jwt__Audience: "techsalary-platform"
+  Jwt__AccessTokenMinutes: "60"
+  Jwt__RefreshTokenDays: "30"
+  ConnectionStrings__Postgres: "Host=postgres-service.data.svc.cluster.local;Port=5432;Database=techsalary;Username=techsalary_user;Password=$(DB_PASSWORD)"

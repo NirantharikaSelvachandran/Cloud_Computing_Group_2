@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-service
+  namespace: app
+  labels:
+    app: identity-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity-service
+  template:
+    metadata:
+      labels:
+        app: identity-service
+    spec:
+      containers:
+        - name: identity-service
+          image: identity-service:latest
+          imagePullPolicy: Never          # use locally built image on single-node cluster
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: identity-service-config
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: identity-service-secret
+                  key: db-password
+            - name: Jwt__Secret
+              valueFrom:
+                secretKeyRef:
+                  name: identity-service-secret
+                  key: jwt-secret
+            # Override the connection string so the password substitution works
+            - name: ConnectionStrings__Postgres
+              value: "Host=postgres-service.data.svc.cluster.local;Port=5432;Database=techsalary;Username=techsalary_user;Password=$(DB_PASSWORD)"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
