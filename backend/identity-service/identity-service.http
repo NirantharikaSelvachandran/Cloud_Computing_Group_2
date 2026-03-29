@@ -1,6 +1,71 @@
-@identity_service_HostAddress = http://localhost:5178
+### Identity Service – HTTP test file
+### Use with JetBrains HTTP Client or VS Code REST Client
 
-GET {{identity_service_HostAddress}}/weatherforecast/
-Accept: application/json
+@baseUrl = http://localhost:8080
+@contentType = application/json
 
-###
+### ── REGISTER ────────────────────────────────────────────────────────────────
+
+POST {{baseUrl}}/identity/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "alice@example.com",
+  "password": "Password123"
+}
+
+### ── LOGIN ───────────────────────────────────────────────────────────────────
+
+POST {{baseUrl}}/identity/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "alice@example.com",
+  "password": "Password123"
+}
+
+### ── REFRESH TOKEN ───────────────────────────────────────────────────────────
+
+POST {{baseUrl}}/identity/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "<paste_refresh_token_here>"
+}
+
+### ── LOGOUT ──────────────────────────────────────────────────────────────────
+
+POST {{baseUrl}}/identity/auth/logout
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "<paste_refresh_token_here>"
+}
+
+### ── VALIDATE TOKEN (used by BFF) ───────────────────────────────────────────
+
+GET {{baseUrl}}/identity/auth/validate?token=<paste_access_token_here>
+
+### ── GET MY PROFILE ──────────────────────────────────────────────────────────
+
+GET {{baseUrl}}/identity/users/me
+Authorization: Bearer <paste_access_token_here>
+
+### ── CHANGE PASSWORD ─────────────────────────────────────────────────────────
+
+PUT {{baseUrl}}/identity/users/me/password
+Authorization: Bearer <paste_access_token_here>
+Content-Type: {{contentType}}
+
+{
+  "currentPassword": "Password123",
+  "newPassword": "NewPassword456"
+}
+
+### ── HEALTH CHECK ────────────────────────────────────────────────────────────
+
+GET {{baseUrl}}/health
+
+### ── SWAGGER UI ──────────────────────────────────────────────────────────────
+
+GET {{baseUrl}}/swagger
