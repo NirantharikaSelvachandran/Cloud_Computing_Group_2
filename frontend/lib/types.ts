@@ -59,8 +59,11 @@ export interface RegisterRequest {
   password: string;
 }
 
+/** Normalized client auth shape (maps identity-service `accessToken` to `token`). */
 export interface AuthResponse {
   token?: string;
+  accessToken?: string;
+  refreshToken?: string;
   userId?: string;
   email?: string;
   message?: string;

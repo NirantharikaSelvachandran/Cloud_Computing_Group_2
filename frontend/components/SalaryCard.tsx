@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import * as api from "@/lib/api";
 import type { SalarySearchResult } from "@/lib/types";
@@ -18,6 +18,20 @@ export function SalaryCard({ salary, showVotes = true }: { salary: SalarySearchR
   const [voting, setVoting] = useState<"up" | "down" | null>(null);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (!showVotes || !salary.id) return;
+    let cancelled = false;
+    api.getVotes(salary.id).then((v) => {
+      if (!cancelled) {
+        setUpvotes(v.upvotes);
+        setDownvotes(v.downvotes);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [salary.id, showVotes]);
+
   const handleVote = useCallback(
     async (voteType: "UP" | "DOWN") => {
       if (!isLoggedIn || !salary.id || !auth.userId || !auth.token) {
@@ -28,11 +42,9 @@ export function SalaryCard({ salary, showVotes = true }: { salary: SalarySearchR
       setVoting(voteType === "UP" ? "up" : "down");
       try {
         await api.vote(salary.id, auth.userId, voteType, auth.token);
-        if (voteType === "UP") {
-          setUpvotes((n) => n + 1);
-        } else {
-          setDownvotes((n) => n + 1);
-        }
+        const v = await api.getVotes(salary.id);
+        setUpvotes(v.upvotes);
+        setDownvotes(v.downvotes);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Vote failed");
       } finally {
