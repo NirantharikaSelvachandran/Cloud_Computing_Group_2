@@ -93,7 +93,10 @@ export default function StatsPage() {
         <div className="mt-6 rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900/50">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Summary</h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Based on {stats.count} submission{stats.count !== 1 ? "s" : ""} ({stats.currency} {stats.period})
+            Based on {stats.count} submission{stats.count !== 1 ? "s" : ""}
+            {stats.currency || stats.period
+              ? ` (${[stats.currency, stats.period].filter(Boolean).join(" · ")})`
+              : ""}
           </p>
           <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/50">

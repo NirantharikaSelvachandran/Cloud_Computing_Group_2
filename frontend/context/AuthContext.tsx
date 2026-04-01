@@ -47,20 +47,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const data = await api.login(email, password);
-    const token = (data as AuthResponse & { token?: string }).token ?? "";
-    const userId = (data as AuthResponse & { userId?: string }).userId ?? "";
-    const payload = { token, userId, email };
+    const token = data.token ?? "";
+    const userId = data.userId ?? "";
+    const resolvedEmail = data.email ?? email;
+    const payload = { token, userId, email: resolvedEmail };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    setAuth({ token, userId, email, ready: true });
+    setAuth({ token, userId, email: resolvedEmail, ready: true });
   }, []);
 
   const register = useCallback(async (email: string, password: string) => {
     const data = await api.register(email, password);
-    const token = (data as AuthResponse & { token?: string }).token ?? "";
-    const userId = (data as AuthResponse & { userId?: string }).userId ?? "";
-    const payload = { token, userId, email };
+    const token = data.token ?? "";
+    const userId = data.userId ?? "";
+    const resolvedEmail = data.email ?? email;
+    const payload = { token, userId, email: resolvedEmail };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    setAuth({ token, userId, email, ready: true });
+    setAuth({ token, userId, email: resolvedEmail, ready: true });
   }, []);
 
   const logout = useCallback(() => {

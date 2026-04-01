@@ -6,7 +6,6 @@ import { SalaryCard } from "@/components/SalaryCard";
 import type { SalarySearchResult, SalarySearchFilters } from "@/lib/types";
 
 const LEVELS = ["Junior", "Mid", "Senior", "Lead", "Principal", "Other"];
-const PERIODS = ["yearly", "monthly", "hourly"];
 
 export default function SearchPage() {
   const [filters, setFilters] = useState<SalarySearchFilters>({});
