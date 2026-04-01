@@ -127,16 +127,16 @@ export async function getStats(params: {
 }
 
 // Votes (require auth)
-export async function getVotes(salaryId: string) {
-  const res = await bff(`/api/votes/${salaryId}`);
+export async function getVotes(salaryId: string, token: string) {
+  const res = await withAuth(token)(`/api/votes/${salaryId}`);
   if (!res.ok) return { salaryId, upvotes: 0, downvotes: 0 };
   return res.json() as Promise<import("./types").VoteCounts>;
 }
 
-export async function vote(salaryId: string, userId: string, voteType: "UP" | "DOWN", token: string) {
+export async function vote(salaryId: string, voteType: "UP" | "DOWN", token: string) {
   const res = await withAuth(token)(`/api/votes`, {
     method: "POST",
-    body: JSON.stringify({ salaryId, userId, voteType }),
+    body: JSON.stringify({ salaryId, voteType }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

@@ -19,9 +19,9 @@ export function SalaryCard({ salary, showVotes = true }: { salary: SalarySearchR
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!showVotes || !salary.id) return;
+    if (!showVotes || !salary.id || !auth.token) return;
     let cancelled = false;
-    api.getVotes(salary.id).then((v) => {
+    api.getVotes(salary.id, auth.token).then((v) => {
       if (!cancelled) {
         setUpvotes(v.upvotes);
         setDownvotes(v.downvotes);
@@ -30,19 +30,19 @@ export function SalaryCard({ salary, showVotes = true }: { salary: SalarySearchR
     return () => {
       cancelled = true;
     };
-  }, [salary.id, showVotes]);
+  }, [salary.id, showVotes, auth.token]);
 
   const handleVote = useCallback(
     async (voteType: "UP" | "DOWN") => {
-      if (!isLoggedIn || !salary.id || !auth.userId || !auth.token) {
+      if (!isLoggedIn || !salary.id || !auth.token) {
         setError("Sign in to vote");
         return;
       }
       setError("");
       setVoting(voteType === "UP" ? "up" : "down");
       try {
-        await api.vote(salary.id, auth.userId, voteType, auth.token);
-        const v = await api.getVotes(salary.id);
+        await api.vote(salary.id, voteType, auth.token);
+        const v = await api.getVotes(salary.id, auth.token);
         setUpvotes(v.upvotes);
         setDownvotes(v.downvotes);
       } catch (e) {
@@ -51,7 +51,7 @@ export function SalaryCard({ salary, showVotes = true }: { salary: SalarySearchR
         setVoting(null);
       }
     },
-    [isLoggedIn, salary.id, auth.userId, auth.token]
+    [isLoggedIn, salary.id, auth.token]
   );
 
   const id = salary.id;
