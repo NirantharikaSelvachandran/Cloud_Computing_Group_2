@@ -25,7 +25,12 @@
         { "Host": "localhost", "Port": 5003 }
       ],
       "UpstreamPathTemplate": "/api/votes/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST" ]
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
     },
     {
       "DownstreamPathTemplate": "/search",
