@@ -70,7 +70,11 @@ builder.WebHost.UseUrls("http://0.0.0.0:8080");
 
 var app = builder.Build();
 
-app.MapGet("/health", () => Results.Ok("Healthy"));
+app.MapGet("/health", () => Results.Ok(new
+{
+    status = "healthy",
+    service = "Vote Service",
+}));
 
 // Enable Swagger (you can also restrict to Development only if needed)
 app.UseSwagger();
