@@ -66,7 +66,11 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.WebHost.UseUrls("http://0.0.0.0:8080");
+
 var app = builder.Build();
+
+app.MapGet("/health", () => Results.Ok("Healthy"));
 
 // Enable Swagger (you can also restrict to Development only if needed)
 app.UseSwagger();
