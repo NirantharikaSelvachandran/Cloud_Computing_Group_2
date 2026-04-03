@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: app
+data:
+  Jwt__Authority: http://identity-service
+  Jwt__Audience: api
+  VoteSettings__ApprovalThreshold: "5"
