@@ -39,10 +39,10 @@ public class VotesController(VoteService voteService) : ControllerBase
     }
 
     [HttpGet("{salaryId}")]
-    public IActionResult GetVotes(Guid salaryId)
+    public async Task<IActionResult> GetVotes(Guid salaryId)
     {
-        var up = voteService.CountUpVotes(salaryId);
-        var down = voteService.CountDownVotes(salaryId);
+        var up = await voteService.CountUpVotes(salaryId);
+        var down = await voteService.CountDownVotes(salaryId);
 
         return Ok(new
         {
