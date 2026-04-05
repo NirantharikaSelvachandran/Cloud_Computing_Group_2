@@ -32,8 +32,8 @@ public class VotesController(VoteService voteService) : ControllerBase
             token
         );
 
-        if (!success)
-            return BadRequest("User already voted");
+        if (!success.Success)
+            return BadRequest(new { message = success.ErrorMessage });
 
         return Ok(new { message = "Vote recorded" });
     }

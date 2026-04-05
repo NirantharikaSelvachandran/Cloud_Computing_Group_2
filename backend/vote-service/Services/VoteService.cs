@@ -1,50 +1,88 @@
 using Microsoft.EntityFrameworkCore;
 using vote_service.Data;
+using vote_service.DTO;
 using vote_service.Models;
 
 namespace vote_service.Services;
 
 public class VoteService(VoteDbContext db, IHttpClientFactory httpClientFactory, IConfiguration configuration)
 {
-    public async Task<bool> AddVote(Guid salaryId, Guid userId, string voteType, string token)
+    public async Task<VoteResponse> AddVote(Guid salaryId, Guid userId, string voteType, string token)
     {
+        var exists = await CheckSalaryExists(salaryId, token);
+
+        if (!exists)
+        {            
+            return new VoteResponse
+            {
+                Success = false,
+                ErrorMessage = "Salary Details not found"
+            };
+        }
+        
         voteType = voteType.ToUpper();
 
         if (voteType != "UP" && voteType != "DOWN")
-            throw new Exception("Invalid vote type");
+        {
+            return new VoteResponse
+            {
+                Success = false,
+                ErrorMessage = "Invalid vote type"
+            };
+        }
 
         var existing = await db.Votes
             .FirstOrDefaultAsync(v => v.SalaryId == salaryId && v.UserId == userId);
 
         if (existing != null)
-            return false;
-
-        var vote = new Vote
         {
-            Id = Guid.NewGuid(),
-            SalaryId = salaryId,
-            UserId = userId,
-            VoteType = voteType
-        };
+          
+            if (existing.VoteType == voteType)
+            {
+                return new VoteResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Vote already exists"
+                };
+            }
+            
+            existing.VoteType = voteType;
+        }
+        else
+        {
+            // New vote
+            var vote = new Vote
+            {
+                Id = Guid.NewGuid(),
+                SalaryId = salaryId,
+                UserId = userId,
+                VoteType = voteType
+            };
 
-        db.Votes.Add(vote);
+            db.Votes.Add(vote);
+        }
+
         await db.SaveChangesAsync();
 
         // Check approval threshold
-        if (voteType != "UP") return true;
+        if (voteType != "UP") return new VoteResponse { Success = true };
         {
             var upvotes = await db.Votes
                 .CountAsync(v => v.SalaryId == salaryId && v.VoteType == "UP");
 
             var threshold = configuration.GetValue<int>("VoteSettings:ApprovalThreshold");
 
-            if (upvotes >= threshold)
+            if (upvotes < threshold) return new VoteResponse { Success = true };
+            
+            var response = await ApproveSalary(salaryId, token);
+
+            if (!response.Success)
             {
-                await ApproveSalary(salaryId, token);
+                return response;
             }
         }
 
-        return true;
+        return new VoteResponse { Success = true };
     }
 
     public async Task<int> CountUpVotes(Guid salaryId)
@@ -59,7 +97,7 @@ public class VoteService(VoteDbContext db, IHttpClientFactory httpClientFactory,
             .CountAsync(v => v.SalaryId == salaryId && v.VoteType == "DOWN");
     }
     
-    private async Task ApproveSalary(Guid salaryId, string token)
+    private async Task<VoteResponse> ApproveSalary(Guid salaryId, string token)
     {
         var salaryServiceUrl = configuration["Services:SalaryService"] 
                                ?? throw new Exception("SalaryService URL not configured");
@@ -76,7 +114,31 @@ public class VoteService(VoteDbContext db, IHttpClientFactory httpClientFactory,
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to approve salary");
+            return new VoteResponse
+            {
+                Success = false,
+                ErrorMessage = "Failed to approve salary submission"
+            };
         }
+        
+        return new VoteResponse { Success = true };
+    }
+    
+    private async Task<bool> CheckSalaryExists(Guid salaryId,  string token)
+    {
+        var salaryServiceUrl = configuration["Services:SalaryService"]
+                               ?? throw new Exception("SalaryService URL not configured");
+
+        var client = httpClientFactory.CreateClient();
+        
+        
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await client.GetAsync(
+            $"{salaryServiceUrl}/salary/{salaryId}"
+        );
+
+        return response.IsSuccessStatusCode;
     }
 }
