@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: salary-service
+  namespace: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: salary-service
+  template:
+    metadata:
+      labels:
+        app: salary-service
+    spec:
+      containers:
+        - name: salary-service
+          image: salary-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: db-secret
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
