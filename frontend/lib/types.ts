@@ -27,6 +27,8 @@ export interface SalarySearchFilters {
 
 export interface SalarySearchResult extends SalarySubmission {
   id: string;
+  /** Present on search-service responses (e.g. APPROVED). */
+  status?: string;
   upvotes?: number;
   downvotes?: number;
 }

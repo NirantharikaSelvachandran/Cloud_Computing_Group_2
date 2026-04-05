@@ -3,17 +3,23 @@ kind: Ingress
 metadata:
   name: app-ingress
   namespace: app
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
     - host: salary.local
       http:
         paths:
-          - path: /
+          # Longer prefix first: BFF (Ocelot upstream paths keep /api/...)
+          - path: /api
             pathType: Prefix
             backend:
               service:
                 name: api-gateway
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
                 port:
                   number: 80

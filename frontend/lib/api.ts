@@ -73,12 +73,58 @@ export async function getSalary(id: string) {
   return res.json();
 }
 
-// Search — uses salary service approved list via gateway; filters run in the browser (search microservice optional).
+// Search — search-service via gateway: `/api/search` (all approved) or `/api/search/filter?…` when the gateway routes it.
+// If `/api/search/filter` is not configured in Ocelot (404), falls back to `/api/search` and applies filters in the browser.
 export async function searchSalaries(params: import("./types").SalarySearchFilters) {
-  const res = await bff("/api/salaries/approved");
-  if (!res.ok) throw new Error("Search failed");
-  const list = (await res.json()) as import("./types").SalarySearchResult[];
-  return filterSalaryResults(list, params);
+  const search = buildSearchServiceQuery(params);
+  const q = search.toString();
+
+  let list: import("./types").SalarySearchResult[];
+
+  if (q) {
+    const filterRes = await bff(`/api/search/filter?${q}`);
+    if (filterRes.ok) {
+      list = (await filterRes.json()) as import("./types").SalarySearchResult[];
+    } else if (filterRes.status === 404) {
+      const allRes = await bff("/api/search");
+      if (!allRes.ok) throw new Error("Search failed");
+      list = (await allRes.json()) as import("./types").SalarySearchResult[];
+      return filterSalaryResults(Array.isArray(list) ? list : [], params);
+    } else {
+      throw new Error("Search failed");
+    }
+  } else {
+    const res = await bff("/api/search");
+    if (!res.ok) throw new Error("Search failed");
+    list = (await res.json()) as import("./types").SalarySearchResult[];
+  }
+
+  if (!Array.isArray(list)) list = [];
+  return applyCurrencyFilter(list, params);
+}
+
+function buildSearchServiceQuery(p: import("./types").SalarySearchFilters): URLSearchParams {
+  const search = new URLSearchParams();
+  if (p.country?.trim()) search.set("country", p.country.trim());
+  if (p.company?.trim()) search.set("company", p.company.trim());
+  if (p.role?.trim()) search.set("role", p.role.trim());
+  if (p.level?.trim()) search.set("level", p.level.trim());
+  if (p.minAmount != null && Number.isFinite(p.minAmount)) search.set("minAmount", String(p.minAmount));
+  if (p.maxAmount != null && Number.isFinite(p.maxAmount)) search.set("maxAmount", String(p.maxAmount));
+  if (p.experienceYears != null && Number.isFinite(p.experienceYears)) {
+    search.set("minExperience", String(p.experienceYears));
+    search.set("maxExperience", String(p.experienceYears));
+  }
+  return search;
+}
+
+function applyCurrencyFilter(
+  list: import("./types").SalarySearchResult[],
+  p: import("./types").SalarySearchFilters
+): import("./types").SalarySearchResult[] {
+  if (!p.currency?.trim()) return list;
+  const c = p.currency.trim().toUpperCase();
+  return list.filter((s) => s.currency.toUpperCase() === c);
 }
 
 function filterSalaryResults(
@@ -108,18 +154,18 @@ function filterSalaryResults(
   });
 }
 
-// Stats
+// Stats — stats-service: GET /stats?country=&role=&currency=&period=
 export async function getStats(params: {
   country?: string;
-  company?: string;
   role?: string;
-  level?: string;
   currency?: string;
+  period?: string;
 }) {
   const search = new URLSearchParams();
-  Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== "") search.set(k, String(v));
-  });
+  if (params.country) search.set("country", params.country);
+  if (params.role) search.set("role", params.role);
+  if (params.currency) search.set("currency", params.currency);
+  if (params.period) search.set("period", params.period);
   const q = search.toString();
   const res = await bff(`/api/stats${q ? `?${q}` : ""}`);
   if (!res.ok) throw new Error("Stats failed");
