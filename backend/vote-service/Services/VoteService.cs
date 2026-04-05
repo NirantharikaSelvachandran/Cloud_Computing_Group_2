@@ -6,7 +6,7 @@ namespace vote_service.Services;
 
 public class VoteService(VoteDbContext db, IHttpClientFactory httpClientFactory, IConfiguration configuration)
 {
-    public async Task<bool> AddVote(Guid salaryId, Guid userId, string voteType)
+    public async Task<bool> AddVote(Guid salaryId, Guid userId, string voteType, string token)
     {
         voteType = voteType.ToUpper();
 
@@ -40,7 +40,7 @@ public class VoteService(VoteDbContext db, IHttpClientFactory httpClientFactory,
 
             if (upvotes >= threshold)
             {
-                await ApproveSalary(salaryId);
+                await ApproveSalary(salaryId, token);
             }
         }
 
@@ -59,12 +59,15 @@ public class VoteService(VoteDbContext db, IHttpClientFactory httpClientFactory,
             .CountAsync(v => v.SalaryId == salaryId && v.VoteType == "DOWN");
     }
     
-    private async Task ApproveSalary(Guid salaryId)
+    private async Task ApproveSalary(Guid salaryId, string token)
     {
         var salaryServiceUrl = configuration["Services:SalaryService"] 
                                ?? throw new Exception("SalaryService URL not configured");
 
         var client = httpClientFactory.CreateClient();
+        
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await client.PutAsync(
             $"{salaryServiceUrl}/salary/submissions/{salaryId}/approve",

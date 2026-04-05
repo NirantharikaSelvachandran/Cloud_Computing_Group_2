@@ -23,10 +23,13 @@ public class VotesController(VoteService voteService) : ControllerBase
         if (!Guid.TryParse(userIdClaim, out var userId))
             return Unauthorized();
         
+        var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        
         var success = await voteService.AddVote(
             request.SalaryId,
             userId,
-            request.VoteType
+            request.VoteType,
+            token
         );
 
         if (!success)
