@@ -47,22 +47,33 @@ public class VoteService(VoteDbContext db, IHttpClientFactory httpClientFactory,
         return true;
     }
 
-    public int CountUpVotes(Guid salaryId)
+    public async Task<int> CountUpVotes(Guid salaryId)
     {
-        return db.Votes.Count(v => v.SalaryId == salaryId && v.VoteType == "UP");
+        return await db.Votes
+            .CountAsync(v => v.SalaryId == salaryId && v.VoteType == "UP");
     }
 
-    public int CountDownVotes(Guid salaryId)
+    public async Task<int> CountDownVotes(Guid salaryId)
     {
-        return db.Votes.Count(v => v.SalaryId == salaryId && v.VoteType == "DOWN");
+        return await db.Votes
+            .CountAsync(v => v.SalaryId == salaryId && v.VoteType == "DOWN");
     }
     
     private async Task ApproveSalary(Guid salaryId)
     {
-        var salaryServiceUrl = configuration["Services:SalaryService"];
+        var salaryServiceUrl = configuration["Services:SalaryService"] 
+                               ?? throw new Exception("SalaryService URL not configured");
 
         var client = httpClientFactory.CreateClient();
 
-        await client.PutAsync($"{salaryServiceUrl}/salary/submissions/{salaryId}/approve", null);
+        var response = await client.PutAsync(
+            $"{salaryServiceUrl}/salary/submissions/{salaryId}/approve",
+            null
+        );
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception("Failed to approve salary");
+        }
     }
 }
