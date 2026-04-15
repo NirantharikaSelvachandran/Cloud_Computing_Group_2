@@ -94,6 +94,25 @@ app.MapGet("/health", () => Results.Ok(new
     service = "Vote Service",
 }));
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<VoteDbContext>();
+
+    db.Database.ExecuteSqlRaw("CREATE SCHEMA IF NOT EXISTS community");
+
+    db.Database.ExecuteSqlRaw("""
+                                  CREATE TABLE IF NOT EXISTS community.votes (
+                                      id UUID PRIMARY KEY,
+                                      salary_id UUID NOT NULL,
+                                      user_id UUID NOT NULL,
+                                      vote_type VARCHAR(10) NOT NULL,
+                                      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+                                      CONSTRAINT unique_vote UNIQUE (salary_id, user_id)
+                                  )
+                              """);
+}
+
 // Enable Swagger (you can also restrict to Development only if needed)
 app.UseSwagger();
 app.UseSwaggerUI();
