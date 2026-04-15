@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using salary_service.DTO;
 using salary_service.Services;
@@ -44,7 +45,8 @@ public class SalaryController(SalaryService salaryService) : ControllerBase
         return Ok(results);
     }
 
-    // PUT /salary/submissions/{id}/approve - internal, called by vote-service
+    // PUT /salary/submissions/{id}/approve - internal, called by vote-service with user JWT
+    [Authorize]
     [HttpPut("submissions/{id:guid}/approve")]
     public async Task<IActionResult> Approve(Guid id)
     {
