@@ -16,10 +16,10 @@ public class StatsService(StatsDbContext db)
             .Where(s => s.Status == "APPROVED");
 
         if (!string.IsNullOrWhiteSpace(country))
-            query = query.Where(s => s.Country.ToLower() == country.ToLower().Trim());
+            query = query.Where(s => s.Country.ToLower().Contains(country.ToLower().Trim()));
 
         if (!string.IsNullOrWhiteSpace(role))
-            query = query.Where(s => s.Role.ToLower() == role.ToLower().Trim());
+            query = query.Where(s => s.Role.ToLower().Contains(role.ToLower().Trim()));
 
         if (!string.IsNullOrWhiteSpace(currency))
             query = query.Where(s => s.Currency.ToUpper() == currency.ToUpper().Trim());
