@@ -42,6 +42,17 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins(builder.Configuration.GetConnectionString("FrontEndUrl") ?? "http://localhost:3000")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 builder.Services.AddAuthorization();
 
 builder.Services.AddOcelot();
@@ -49,6 +60,8 @@ builder.Services.AddOcelot();
 var app = builder.Build();
 
 app.MapGet("/health", () => Results.Ok("Healthy"));
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
