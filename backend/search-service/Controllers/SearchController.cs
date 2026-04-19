@@ -9,10 +9,12 @@ public class SearchController(SearchService searchService) : ControllerBase
 {
     // GET /search - basic search (all approved)
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll(
+        [FromHeader(Name = "ISLoggedUser")] string? isLoggedUserHeader)
     {
-        var isLoggedUser = Request.Headers["ISLoggedUser"].ToString()
-            .Equals("true", StringComparison.CurrentCultureIgnoreCase);
+        var isLoggedUser = isLoggedUserHeader?
+            .Equals("true", StringComparison.CurrentCultureIgnoreCase) ?? false;
 
         var results = await searchService.SearchAsync(
             null, null, null, null,
@@ -22,6 +24,7 @@ public class SearchController(SearchService searchService) : ControllerBase
 
     // GET /search/filter?country=...&company=...
     [HttpGet("filter")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Search(
         [FromQuery] string? country,
         [FromQuery] string? company,
@@ -30,10 +33,12 @@ public class SearchController(SearchService searchService) : ControllerBase
         [FromQuery] decimal? minAmount,
         [FromQuery] decimal? maxAmount,
         [FromQuery] int? minExperience,
-        [FromQuery] int? maxExperience)
+        [FromQuery] int? maxExperience,
+        [FromHeader(Name = "ISLoggedUser")] string? isLoggedUserHeader
+    )
     {
-        var isLoggedUser = Request.Headers["ISLoggedUser"].ToString()
-            .Equals("true", StringComparison.CurrentCultureIgnoreCase);
+        var isLoggedUser = isLoggedUserHeader?
+            .Equals("true", StringComparison.CurrentCultureIgnoreCase) ?? false;
 
         var results = await searchService.SearchAsync(
             country,
