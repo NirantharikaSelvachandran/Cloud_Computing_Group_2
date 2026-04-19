@@ -7,6 +7,8 @@ import type { StatsResult } from "@/lib/types";
 export default function StatsPage() {
   const [country, setCountry] = useState("");
   const [role, setRole] = useState("");
+  const [currency, setCurrency] = useState("LKR");
+  const [period, setPeriod] = useState("monthly");
   const [stats, setStats] = useState<StatsResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -21,7 +23,12 @@ export default function StatsPage() {
       setLoading(true);
       setError("");
       try {
-        const data = await getStats({ country: country || undefined, role: role || undefined });
+        const data = await getStats({
+          country: country || undefined,
+          role: role || undefined,
+          currency: currency || undefined,
+          period: period || undefined,
+        });
         if (!cancelled) setStats(data);
       } catch (e) {
         if (!cancelled) {
@@ -37,7 +44,7 @@ export default function StatsPage() {
       cancelled = true;
       clearTimeout(t);
     };
-  }, [country, role]);
+  }, [country, role, currency, period]);
 
   function formatNum(n: number, currency: string) {
     return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD", maximumFractionDigits: 0 }).format(n);
@@ -91,12 +98,38 @@ export default function StatsPage() {
 
       {!loading && !error && stats && (
         <div className="mt-6 rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900/50">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Summary</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Summary</h2>
+            <div className="flex gap-2">
+              <select
+                value={period}
+                onChange={(e) => setPeriod(e.target.value)}
+                className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                aria-label="Display period"
+              >
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+                <option value="hourly">Hourly</option>
+              </select>
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                aria-label="Display currency"
+              >
+                <option value="LKR">LKR</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+                <option value="INR">INR</option>
+                <option value="AUD">AUD</option>
+                <option value="CAD">CAD</option>
+              </select>
+            </div>
+          </div>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Based on {stats.count} submission{stats.count !== 1 ? "s" : ""}
-            {stats.currency || stats.period
-              ? ` (${[stats.currency, stats.period].filter(Boolean).join(" · ")})`
-              : ""}
+            {stats.period ? ` · ${stats.period}` : ""}
           </p>
           <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/50">

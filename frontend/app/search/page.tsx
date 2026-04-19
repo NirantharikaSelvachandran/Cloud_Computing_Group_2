@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { searchSalaries } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import { SalaryCard } from "@/components/SalaryCard";
 import type { SalarySearchResult, SalarySearchFilters } from "@/lib/types";
 
 const LEVELS = ["Junior", "Mid", "Senior", "Lead", "Principal", "Other"];
 
 export default function SearchPage() {
+  const { auth } = useAuth();
   const [filters, setFilters] = useState<SalarySearchFilters>({});
   const [results, setResults] = useState<SalarySearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -20,7 +22,7 @@ export default function SearchPage() {
     setLoading(true);
     setSearched(true);
     try {
-      const data = await searchSalaries(filters);
+      const data = await searchSalaries(filters, auth.token);
       setResults(Array.isArray(data) ? data : []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Search failed");

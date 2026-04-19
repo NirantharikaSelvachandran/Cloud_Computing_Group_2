@@ -75,18 +75,23 @@ export async function getSalary(id: string) {
 
 // Search — search-service via gateway: `/api/search` (all approved) or `/api/search/filter?…` when the gateway routes it.
 // If `/api/search/filter` is not configured in Ocelot (404), falls back to `/api/search` and applies filters in the browser.
-export async function searchSalaries(params: import("./types").SalarySearchFilters) {
+export async function searchSalaries(params: import("./types").SalarySearchFilters, token?: string | null) {
   const search = buildSearchServiceQuery(params);
   const q = search.toString();
+  const authHeaders: Record<string, string> = {};
+  if (token) {
+    authHeaders["ISLoggedUser"] = "true";
+    authHeaders["Authorization"] = `Bearer ${token}`;
+  }
 
   let list: import("./types").SalarySearchResult[];
 
   if (q) {
-    const filterRes = await bff(`/api/search/filter?${q}`);
+    const filterRes = await bff(`/api/search/filter?${q}`, { headers: authHeaders });
     if (filterRes.ok) {
       list = (await filterRes.json()) as import("./types").SalarySearchResult[];
     } else if (filterRes.status === 404) {
-      const allRes = await bff("/api/search");
+      const allRes = await bff("/api/search", { headers: authHeaders });
       if (!allRes.ok) throw new Error("Search failed");
       list = (await allRes.json()) as import("./types").SalarySearchResult[];
       return filterSalaryResults(Array.isArray(list) ? list : [], params);
@@ -94,7 +99,7 @@ export async function searchSalaries(params: import("./types").SalarySearchFilte
       throw new Error("Search failed");
     }
   } else {
-    const res = await bff("/api/search");
+    const res = await bff("/api/search", { headers: authHeaders });
     if (!res.ok) throw new Error("Search failed");
     list = (await res.json()) as import("./types").SalarySearchResult[];
   }
@@ -194,7 +199,7 @@ export async function vote(salaryId: string, voteType: "UP" | "DOWN", token: str
 // Auth
 export async function login(email: string, password: string) {
   // Gateway: /api/auth/{everything} → /identity/{everything}; identity routes live under /identity/auth/…
-  const res = await bff("/api/identity/auth/login", {
+  const res = await bff("/api/auth/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
