@@ -32,12 +32,12 @@
       }
     },
     {
-      "DownstreamPathTemplate": "/search",
+      "DownstreamPathTemplate": "/search/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         { "Host": "search-service", "Port": 80 }
       ],
-      "UpstreamPathTemplate": "/api/search",
+      "UpstreamPathTemplate": "/api/search/{everything}",
       "UpstreamHttpMethod": [ "GET" ]
     },
     {
