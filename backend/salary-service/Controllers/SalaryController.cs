@@ -54,4 +54,14 @@ public class SalaryController(SalaryService salaryService) : ControllerBase
         if (!success) return NotFound(new { message = "Submission not found" });
         return Ok(new { message = "Submission approved" });
     }
+    
+    // PUT /salary/submissions/{id}/unapprove - internal, called by vote-service with user JWT
+    [Authorize]
+    [HttpPut("submissions/{id:guid}/unapprove")]
+    public async Task<IActionResult> UnApprove(Guid id)
+    {
+        var success = await salaryService.UnApproveAsync(id);
+        if (!success) return NotFound(new { message = "Submission not found" });
+        return Ok(new { message = "Submission Unapproved" });
+    }
 }

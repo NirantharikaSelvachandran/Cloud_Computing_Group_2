@@ -80,4 +80,14 @@ public class SalaryService(SalaryDbContext db)
         await db.SaveChangesAsync();
         return true;
     }
+    
+    public async Task<bool> UnApproveAsync(Guid id)
+    {
+        var submission = await db.Submissions.FindAsync(id);
+        if (submission is null) return false;
+
+        submission.Status = "PENDING";
+        await db.SaveChangesAsync();
+        return true;
+    }
 }
