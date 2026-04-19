@@ -4,25 +4,43 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { FormFieldError } from "@/components/FormFieldError";
+import { userMessages } from "@/lib/userMessages";
+
+const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+
+type FieldErrors = { email?: string; password?: string };
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
 
+  function validate(): boolean {
+    const next: FieldErrors = {};
+    const em = email.trim();
+    if (!em) next.email = "Email is required.";
+    else if (!emailOk(em)) next.email = "Please enter a valid email address.";
+    if (!password) next.password = "Password is required.";
+    setFieldErrors(next);
+    return Object.keys(next).length === 0;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    if (!validate()) return;
     setLoading(true);
     try {
-      await login(email, password);
+      await login(email.trim(), password);
       router.push("/");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : userMessages.signInProblem);
     } finally {
       setLoading(false);
     }
@@ -35,7 +53,7 @@ export default function LoginPage() {
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Required for voting and reporting. Your identity is never linked to salary data.
         </p>
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form noValidate onSubmit={handleSubmit} className="mt-6 space-y-4">
           {error && (
             <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">
               {error}
@@ -48,11 +66,21 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
-              required
+              autoComplete="email"
+              aria-invalid={fieldErrors.email ? "true" : "false"}
+              aria-describedby={fieldErrors.email ? "email-error" : undefined}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setFieldErrors((f) => ({ ...f, email: undefined }));
+              }}
+              className={`mt-1 w-full rounded-lg border bg-white px-3 py-2 text-slate-900 focus:outline-none focus:ring-1 dark:bg-slate-800 dark:text-white ${
+                fieldErrors.email
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500 dark:border-red-500"
+                  : "border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 dark:border-slate-600"
+              }`}
             />
+            <FormFieldError id="email-error" message={fieldErrors.email} />
           </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -61,11 +89,21 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
-              required
+              autoComplete="current-password"
+              aria-invalid={fieldErrors.password ? "true" : "false"}
+              aria-describedby={fieldErrors.password ? "password-error" : undefined}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setFieldErrors((f) => ({ ...f, password: undefined }));
+              }}
+              className={`mt-1 w-full rounded-lg border bg-white px-3 py-2 text-slate-900 focus:outline-none focus:ring-1 dark:bg-slate-800 dark:text-white ${
+                fieldErrors.password
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500 dark:border-red-500"
+                  : "border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 dark:border-slate-600"
+              }`}
             />
+            <FormFieldError id="password-error" message={fieldErrors.password} />
           </div>
           <button
             type="submit"

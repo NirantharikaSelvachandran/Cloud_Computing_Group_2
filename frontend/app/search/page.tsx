@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { searchSalaries } from "@/lib/api";
+import { userMessages } from "@/lib/userMessages";
 import { useAuth } from "@/context/AuthContext";
 import { SalaryCard } from "@/components/SalaryCard";
 import type { SalarySearchResult, SalarySearchFilters } from "@/lib/types";
@@ -25,7 +26,7 @@ export default function SearchPage() {
       const data = await searchSalaries(filters, auth.token);
       setResults(Array.isArray(data) ? data : []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Search failed");
+      setError(e instanceof Error ? e.message : userMessages.couldNotLoadSalaries);
       setResults([]);
     } finally {
       setLoading(false);

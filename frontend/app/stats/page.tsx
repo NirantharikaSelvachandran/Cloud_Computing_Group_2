@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { getStats } from "@/lib/api";
+import { STATS_SUPPORTED_CURRENCIES, formatCurrencyAmount } from "@/lib/currencies";
+import { userMessages } from "@/lib/userMessages";
 import type { StatsResult } from "@/lib/types";
 
 export default function StatsPage() {
@@ -32,7 +34,7 @@ export default function StatsPage() {
         if (!cancelled) setStats(data);
       } catch (e) {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Failed to load stats");
+          setError(e instanceof Error ? e.message : userMessages.couldNotLoadStats);
           setStats(null);
         }
       } finally {
@@ -47,7 +49,7 @@ export default function StatsPage() {
   }, [country, role, currency, period]);
 
   function formatNum(n: number, currency: string) {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD", maximumFractionDigits: 0 }).format(n);
+    return formatCurrencyAmount(n, currency || "USD", { maximumFractionDigits: 0 });
   }
 
   return (
@@ -117,13 +119,11 @@ export default function StatsPage() {
                 className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                 aria-label="Display currency"
               >
-                <option value="LKR">LKR</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-                <option value="INR">INR</option>
-                <option value="AUD">AUD</option>
-                <option value="CAD">CAD</option>
+                {STATS_SUPPORTED_CURRENCIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -168,7 +168,7 @@ export default function StatsPage() {
 
       {!loading && !stats && (country || role) && !error && (
         <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 py-8 text-center text-slate-500 dark:border-slate-600 dark:bg-slate-900/30 dark:text-slate-400">
-          No statistics available for this filter. Try different values or ensure the stats service is running.
+          {userMessages.statsNoMatch}
         </div>
       )}
 

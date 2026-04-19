@@ -2,8 +2,17 @@
 
 import { getEmailFromAccessToken } from "./jwt";
 import type { AuthResponse } from "./types";
+import { userMessages } from "./userMessages";
 
 const BFF_BASE = process.env.NEXT_PUBLIC_BFF_URL || "";
+
+/** Session no longer valid (e.g. expired access token). Callers should clear auth and prompt sign-in. */
+export class UnauthorizedError extends Error {
+  constructor(message = "Session expired. Please sign in again.") {
+    super(message);
+    this.name = "UnauthorizedError";
+  }
+}
 
 function parseErrorMessage(data: unknown, fallback: string): string {
   if (data && typeof data === "object") {
@@ -62,14 +71,14 @@ export async function submitSalary(data: import("./types").SalarySubmission) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(parseErrorMessage(err, res.statusText));
+    throw new Error(parseErrorMessage(err, userMessages.couldNotSubmit));
   }
   return res.json();
 }
 
 export async function getSalary(id: string) {
   const res = await bff(`/api/salaries/${id}`);
-  if (!res.ok) throw new Error("Salary not found");
+  if (!res.ok) throw new Error(userMessages.salaryNotAvailable);
   return res.json();
 }
 
@@ -92,15 +101,15 @@ export async function searchSalaries(params: import("./types").SalarySearchFilte
       list = (await filterRes.json()) as import("./types").SalarySearchResult[];
     } else if (filterRes.status === 404) {
       const allRes = await bff("/api/search", { headers: authHeaders });
-      if (!allRes.ok) throw new Error("Search failed");
+      if (!allRes.ok) throw new Error(userMessages.couldNotLoadSalaries);
       list = (await allRes.json()) as import("./types").SalarySearchResult[];
       return filterSalaryResults(Array.isArray(list) ? list : [], params);
     } else {
-      throw new Error("Search failed");
+      throw new Error(userMessages.couldNotLoadSalaries);
     }
   } else {
     const res = await bff("/api/search", { headers: authHeaders });
-    if (!res.ok) throw new Error("Search failed");
+    if (!res.ok) throw new Error(userMessages.couldNotLoadSalaries);
     list = (await res.json()) as import("./types").SalarySearchResult[];
   }
 
@@ -173,14 +182,17 @@ export async function getStats(params: {
   if (params.period) search.set("period", params.period);
   const q = search.toString();
   const res = await bff(`/api/stats${q ? `?${q}` : ""}`);
-  if (!res.ok) throw new Error("Stats failed");
+  if (!res.ok) throw new Error(userMessages.couldNotLoadStats);
   return res.json() as Promise<import("./types").StatsResult>;
 }
 
 // Votes (require auth)
 export async function getVotes(salaryId: string, token: string) {
   const res = await withAuth(token)(`/api/votes/${salaryId}`);
-  if (!res.ok) return { salaryId, upvotes: 0, downvotes: 0 };
+  if (!res.ok) {
+    if (res.status === 401) throw new UnauthorizedError();
+    return { salaryId, upvotes: 0, downvotes: 0 };
+  }
   return res.json() as Promise<import("./types").VoteCounts>;
 }
 
@@ -190,8 +202,9 @@ export async function vote(salaryId: string, voteType: "UP" | "DOWN", token: str
     body: JSON.stringify({ salaryId, voteType }),
   });
   if (!res.ok) {
+    if (res.status === 401) throw new UnauthorizedError();
     const err = await res.json().catch(() => ({}));
-    throw new Error(parseErrorMessage(err, "Vote failed"));
+    throw new Error(parseErrorMessage(err, userMessages.couldNotVote));
   }
   return res.json();
 }
@@ -204,7 +217,7 @@ export async function login(email: string, password: string) {
     body: JSON.stringify({ email, password }),
   });
   const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-  if (!res.ok) throw new Error(parseErrorMessage(data, "Login failed"));
+  if (!res.ok) throw new Error(parseErrorMessage(data, userMessages.signInProblem));
   return normalizeAuth(data);
 }
 
@@ -214,6 +227,6 @@ export async function register(email: string, password: string) {
     body: JSON.stringify({ email, password }),
   });
   const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-  if (!res.ok) throw new Error(parseErrorMessage(data, "Registration failed"));
+  if (!res.ok) throw new Error(parseErrorMessage(data, userMessages.signUpProblem));
   return normalizeAuth(data);
 }

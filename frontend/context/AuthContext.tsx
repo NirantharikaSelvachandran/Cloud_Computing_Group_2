@@ -2,6 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import * as api from "@/lib/api";
+import { isAccessTokenExpired } from "@/lib/jwt";
 import type { AuthResponse } from "@/lib/types";
 
 const STORAGE_KEY = "salary_transparency_auth";
@@ -37,8 +38,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const { token, userId, email } = JSON.parse(raw) as AuthResponse & { token: string };
-        if (token && userId) setAuth({ token, userId, email: email ?? null, ready: true });
-        else setAuth((a) => ({ ...a, ready: true }));
+        if (token && userId) {
+          if (isAccessTokenExpired(token)) {
+            localStorage.removeItem(STORAGE_KEY);
+            setAuth({ token: null, userId: null, email: null, ready: true });
+          } else {
+            setAuth({ token, userId, email: email ?? null, ready: true });
+          }
+        } else setAuth((a) => ({ ...a, ready: true }));
       } else setAuth((a) => ({ ...a, ready: true }));
     } catch {
       setAuth((a) => ({ ...a, ready: true }));
