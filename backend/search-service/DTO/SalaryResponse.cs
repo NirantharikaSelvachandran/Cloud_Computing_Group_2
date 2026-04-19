@@ -1,5 +1,5 @@
-﻿namespace search_service.DTO
-{
+﻿namespace search_service.DTO;
+
     public class SalaryResponse
     {
         public Guid Id { get; set; }
@@ -14,4 +14,4 @@
         public DateTime SubmittedAt { get; set; }
         public string Status { get; set; }
     }
-}
+

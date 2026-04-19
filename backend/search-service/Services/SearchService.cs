@@ -55,7 +55,7 @@ public class SearchService(SearchDbContext db)
         if (!string.IsNullOrWhiteSpace(role))
         {
             query = query.Where(s =>
-                EF.Functions.ILike(s.Role, $"{role}%")); // STARTS WITH
+                EF.Functions.ILike(s.Role, $"{role}%"));
         }
 
         if (!string.IsNullOrWhiteSpace(level))
