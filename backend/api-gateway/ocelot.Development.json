@@ -4,7 +4,7 @@
       "DownstreamPathTemplate": "/identity/auth/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "identity-service", "Port": 80 }
+        { "Host": "localhost", "Port": 8081 }
       ],
       "UpstreamPathTemplate": "/api/auth/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST" ]
@@ -13,7 +13,7 @@
       "DownstreamPathTemplate": "/salary/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "salary-service", "Port": 80 }
+        { "Host": "localhost", "Port": 8082 }
       ],
       "UpstreamPathTemplate": "/api/salaries/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST" ]
@@ -22,7 +22,7 @@
       "DownstreamPathTemplate": "/votes/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "vote-service", "Port": 80 }
+        { "Host": "localhost", "Port": 8083 }
       ],
       "UpstreamPathTemplate": "/api/votes/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST" ],
@@ -35,7 +35,7 @@
       "DownstreamPathTemplate": "/search/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "search-service", "Port": 80 }
+        { "Host": "localhost", "Port": 8084 }
       ],
       "UpstreamPathTemplate": "/api/search/{everything}",
       "UpstreamHttpMethod": [ "GET" ]
@@ -44,13 +44,13 @@
       "DownstreamPathTemplate": "/stats",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "stats-service", "Port": 80 }
+        { "Host": "localhost", "Port": 8085 }
       ],
       "UpstreamPathTemplate": "/api/stats",
       "UpstreamHttpMethod": [ "GET" ]
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "http://api-gateway"
+    "BaseUrl": "http://localhost:5000"
   }
 }

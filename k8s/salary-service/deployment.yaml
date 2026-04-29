@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: salary-service
-          image: salary-service:latest
-          imagePullPolicy: Never
+          image: mishel1113/salary-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
 

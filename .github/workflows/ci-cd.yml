@@ -1,0 +1,69 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - deployment
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push identity-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/identity-service
+          push: true
+          tags: mishel1113/identity-service:latest
+
+      - name: Build and push salary-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/salary-service
+          push: true
+          tags: mishel1113/salary-service:latest
+
+      - name: Build and push vote-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/vote-service
+          push: true
+          tags: mishel1113/vote-service:latest
+
+      - name: Build and push search-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/search-service
+          push: true
+          tags: mishel1113/search-service:latest
+
+      - name: Build and push stats-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/stats-service
+          push: true
+          tags: mishel1113/stats-service:latest
+
+      - name: Build and push api-gateway
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/api-gateway
+          push: true
+          tags: mishel1113/api-gateway:latest
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: mishel1113/frontend:latest

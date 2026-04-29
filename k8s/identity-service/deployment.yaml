@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: search-service
+  name: identity-service
   namespace: app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: search-service
+      app: identity-service
   template:
     metadata:
       labels:
-        app: search-service
+        app: identity-service
     spec:
       containers:
-        - name: search-service
-          image: mishel1113/search-service:latest
+        - name: identity-service
+          image: mishel1113/identity-service:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

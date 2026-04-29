@@ -4,7 +4,7 @@ metadata:
   name: vote-service
   namespace: app
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: vote-service
@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
         - name: vote-service
-          image: vote-service:latest
+          image: mishel1113/vote-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
 
@@ -24,6 +25,9 @@ spec:
                 name: app-config
             - secretRef:
                 name: db-secret
+          env:
+            - name: Services__SalaryService
+              value: http://salary-service
 
           resources:
             requests:

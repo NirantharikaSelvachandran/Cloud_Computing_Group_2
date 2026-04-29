@@ -3,9 +3,12 @@ kind: Ingress
 metadata:
   name: app-ingress
   namespace: app
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
 spec:
+  ingressClassName: nginx
   rules:
-    - host: salary.local
+    - host: techsalary.local
       http:
         paths:
           # Longer prefix first: BFF (Ocelot upstream paths keep /api/...)

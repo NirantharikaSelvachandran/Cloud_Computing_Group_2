@@ -211,8 +211,7 @@ export async function vote(salaryId: string, voteType: "UP" | "DOWN", token: str
 
 // Auth
 export async function login(email: string, password: string) {
-  // Gateway: /api/auth/{everything} → /identity/{everything}; identity routes live under /identity/auth/…
-  const res = await bff("/api/auth/auth/login", {
+  const res = await bff("/api/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
@@ -222,7 +221,7 @@ export async function login(email: string, password: string) {
 }
 
 export async function register(email: string, password: string) {
-  const res = await bff("/api/auth/auth/register", {
+  const res = await bff("/api/auth/register", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });

@@ -4,6 +4,6 @@ metadata:
   name: app-config
   namespace: app
 data:
-  Jwt__Authority: http://identity-service
-  Jwt__Audience: api
+  Jwt__Issuer: identity-service
+  Jwt__Audience: techsalary-platform
   VoteSettings__ApprovalThreshold: "5"
